@@ -76,8 +76,9 @@ int main(void)
 	RTC_Configuration(); //настройка часов
 	Init_USART_GPIO_DS18B20();
 	IWDG_ReloadCounter();
+	Start_USART_DS18B20();//
 		ILL_init();
-		//
+
 		read_seatings(); //читаем настройки
 
 		if(level_ill>20){level_ill=3;}
@@ -113,7 +114,6 @@ int main(void)
     {  IWDG_ReloadCounter();//перезапуск вачдога
 
     	if(unix_time.hour==0 & unix_time.min==0 & unix_time.sec==0){init_lcd ();Set_contr(contr);}//в 00;00 переиниваем экран
-
 
      d =  readADC1_W(ADC_Channel_1,adc_calib);
     if(d>600){ILL_ON();}//примерно 9V отрабатываетё
