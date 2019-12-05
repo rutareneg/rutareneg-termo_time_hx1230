@@ -70,8 +70,6 @@ int main(void)
 	gpio_spi_Init();
 	init_lcd ();
 
-
-
 	Init_Timer4 ();//мигаемточками
 	blinc_init();
 	adc_init ();//астройка ацп 1 канал  и порта ј 1
@@ -85,8 +83,8 @@ int main(void)
 		if(level_ill>20){level_ill=3;}
 		level (level_ill);// устанавливаем яркость
 
-		if(contr < contr_LCD ||contr > contr_LCD ){contr = contr_LCD/2;} write_seatings();//контраст по умолчанию
-		Set_contr(contr);
+		//if(contr < contr_LCD ||contr > contr_LCD ){contr = contr_LCD/2;} write_seatings();//контраст по умолчанию
+		//Set_contr(contr);
 
 //**********************************************************************//
 
@@ -105,7 +103,7 @@ int main(void)
 	 //проверяем установку времени,если пусто подкидываем контрольное значение
 	 	timer = RTC_GetCounter();
 	 	if(timer < tm_def ){RTC_SetCounter_(tm_def);}//пока вачдог не нужен
-	 	if(adc_calib < 2||adc_calib >60000){adc_calib = 60; write_seatings(); }
+	 	//if(adc_calib < 2||adc_calib >60000){adc_calib = 60; write_seatings(); }
 
 //*******************************************************************************************************************************************//
 	 	lcd_clear();
@@ -130,27 +128,71 @@ int main(void)
 
     	   key_st(10);
 
-    	       if	(keys==2) { S_dat++; }//менюшка установки время календарь, однократное нажатие
-    	       if	(keys==20) {  list++; S_dat=0; lcd_clear(); delay_ms(300);}  //менюшка установки системные настройки длительное нажатие
+    	       if	(meny) { S_dat++; }//менюшка установки время календарь, однократное нажатие
+    	       if	(meny_l) {list=1; S_dat=0; ILL_ON(); lcd_clear();}  //менюшка установки системные настройки длительное нажатие
 
+
+//*******************МЕНЮ СПИСОК***********************************************************//
+    	       if(list==1)
+    	       {
+    	    	   list=2;
+    	    while(1){
+
+    	    	if(list==2)  {lcd_set_strs(0,0,8,">ВЫХОД<",0); if(meny){list=0; IWDG_ReloadCounter();rt=0; S_dat=0; BipStop(); list=0;lcd_clear();ILL_OFF;break;}}
+    	    			else  lcd_set_strs(0,0,8," ВЫХОД ",0);
+
+    	    	if(list==3)  {lcd_set_strs(1,0,8,">КОНТРАСТ<",0);if(meny)list_contrast();}
+    	    			else  lcd_set_strs(1,0,8," КОНТРАСТ ",0);
+
+    	    	if(list==4)  {lcd_set_strs(2,0,8,">ПОДСВЕТКА<",0);if(meny)list_ill();}
+    	    			else  lcd_set_strs(2,0,8," ПОДСВЕТКА ",0);
+
+	    	    if(list==5)  {lcd_set_strs(3,0,8,">ВОЛЬТМЕТР<",0);if(meny)list_volt();}
+	    	   			else  lcd_set_strs(3,0,8," ВОЛЬТМЕТР ",0);
+
+	    	    if(list==6) { lcd_set_strs(4,0,8,">DS18-ДВИГАТЕЛЬ<",0);if(meny)list_eng();}
+	    	    		else  lcd_set_strs(4,0,8," DS18-ДВИГАТЕЛЬ ",0);
+
+	    	    if(list==7)  {lcd_set_strs(5,0,8,">DS18-УЛИЦА<",0);if(meny)list_out();}
+	    	    		else  lcd_set_strs(5,0,8," DS18-УЛИЦА ",0);
+
+	    	    if(list==8)  {lcd_set_strs(6,0,8,">DS18-САЛОН<",0);if(meny)list_in();}
+	    	    		else  lcd_set_strs(6,0,8," DS18-САЛОН ",0);
+
+	    	    if(list==9)  {lcd_set_strs(7,0,8,">СОХРАНИТЬ<",0); if(meny){list=0;rt=0;IWDG_ReloadCounter();S_dat=0; BipStop();
+	    	    															lcd_clear();lcd_set_strs(2,21,8,"СОХРАНЯЕМ",0);
+	    	    															write_seatings(); delay_ms(200); lcd_clear();ILL_OFF;break;}//сохраняем и выходим}
+	    	    }
+	    	    		else  lcd_set_strs(7,0,8," СОХРАНИТЬ ",0);
+
+
+
+	    	    key_st(10);
+	    	    if	(keys==1){list++; if(list>9){list=2;} IWDG_ReloadCounter();}
+	    	    if	(keys==3){list--; if(list<2){list=9;} IWDG_ReloadCounter();}
+
+
+    	    }
+    	       }
+
+
+    }
+}
 //*******************контраст**************************************************************//
-     if(list==1)
-    	           {
-    	           	ILL_ON(); //включаем свет
 
-    	       	  while (list==1)
-    	       	  {
-    	         	  	  	  //L=(84-7*6)/2;
-    	           	       lcd_set_strs(1,24,8,"КОНТРАСТ",0);
-    	          	       	   	  // L=(84-9*6)/2;
-    	           	       //lcd_set_strs(1,15,8,"ПОДСВЕТКИ",0);
+ void list_contrast()
 
-    	           	       	if	(keys==1){contr++; if(contr>contr_LCD){contr=0;} Set_contr(contr);IWDG_ReloadCounter();}
-    	           	       	if	(keys==3){contr--; if(contr>contr_LCD){contr=contr_LCD;} Set_contr(contr);IWDG_ReloadCounter();}
-
+    	       	  {			lcd_clear();
+    	           	        lcd_set_strs(1,24,8,"КОНТРАСТ",0);
     	           	       	lcd_set_strs(7,0,8,"+",0);
     	           	       	lcd_set_strs(7,36,8,"МЕНЮ",0);
     	           	       	lcd_set_strs(7,90,8,"-",0);
+
+       	         while(1)   {
+    	           	       	if	(keys==1){contr++; if(contr>contr_LCD){contr=0;} Set_contr(contr);IWDG_ReloadCounter();}
+    	           	       	if	(keys==3){contr--; if(contr>contr_LCD){contr=contr_LCD;} Set_contr(contr);IWDG_ReloadCounter();}
+
+
 
     	           	       	     	_sprtffd(0,buf,contr);
     	           	       	         conv_dir (3,'0');
@@ -158,25 +200,29 @@ int main(void)
 
     	           	       	     	delay_ms(50);
     	           	       	     	key_st(10);
-    	           	       	     	meny_driv ();//двигаем менюшку или выходим
+
+    	           	       	  if (meny){rt=0;S_dat=0; lcd_clear(); return;}
+    	           	       	     	//meny_driv ();//двигаем менюшку или выходим
+    	           	     	 }
+
     	       	  }
-    	           }
 
 //*******************настройка яркости********************************//
 
-	  while (list==2)
+ void list_ill()
 	  {
-  	  	  	  //L=(84-7*6)/2;
+	 	 	 lcd_clear();
     	       lcd_set_strs(0,27,8,"ЯРКОСТЬ",0);
-   	       	   	  // L=(84-9*6)/2;
     	       lcd_set_strs(1,21,8,"ПОДСВЕТКИ",0);
+     	       		     lcd_set_strs(7,0,8,"+",0);
+    	       	    	 lcd_set_strs(7,36,8,"МЕНЮ",0);
+    	       	    	 lcd_set_strs(7,90,8,"-",0);
 
+    	   while(1)   {
     	       	if	(keys==1){level_ill++;if(level_ill>20)level_ill=0;    level ( level_ill ); IWDG_ReloadCounter(); }
     	       	if	(keys==3){level_ill--;if(level_ill>20)level_ill=20;   level ( level_ill ); IWDG_ReloadCounter(); }
 
-    	       		     lcd_set_strs(7,0,8,"+",0);
-    	       	    	 lcd_set_strs(7,36,8,"МЕНЮ",0);
-    	       	    	 lcd_set_strs(7,90,8,"-",0);
+
 
     	       	     	_sprtffd(0,buf,level_ill);
     	       	         conv_dir (2,'0');
@@ -184,19 +230,22 @@ int main(void)
 
     	       	     	delay_ms(50);
     	       	     	key_st(10);
-    	       	     	meny_driv ();//двигаем менюшку или выходим
+    	       	     if (meny){rt=0;S_dat=0; lcd_clear(); return;}
+    	       	     	//meny_driv ();//двигаем менюшку или выходим
+    	   }
 	  }
 
 //*******************настройка вольтметра********************************//
-   while(list==3)
+ void list_volt()
 {
+	 lcd_clear();
 	   	   	   	   	   	   	   	lcd_set_strs(7,0,8,"+",0);
 	       	           	       	lcd_set_strs(7,36,8,"МЕНЮ",0);
 	       	           	       	lcd_set_strs(7,90,8,"-",0);
-	   //L=(84-11*6)/2;
+
 	   lcd_set_strs(0,15,8,"КАЛЛИБРОВКА",0);
-	   	   	//   L=(84-10*6)/2;
 	   lcd_set_strs(1,18,8,"ВОЛЬТМЕТРА",0);
+	    while(1)   {
 	 if (keys==1){adc_calib +=(adc_calib/50); IWDG_ReloadCounter();}
 	 if (keys==3){adc_calib -=(adc_calib/50); IWDG_ReloadCounter();}
 
@@ -209,15 +258,17 @@ int main(void)
 
 	     	delay_ms(100);
 	     	key_st(10);
-	     	meny_driv ();//двигаем менюшку или выходим
-
+	     	if (meny){rt=0;S_dat=0; lcd_clear(); return;}
+	     	//meny_driv ();//двигаем менюшку или выходим
+	   }
 }
 //************************установка датчика 1 **********************************************************//
-   if(list==4)
+ void list_out()
    {IWDG_ReloadCounter();
+   lcd_clear();
 	   set_d_ds18b20 ("  DS18 ВНЕШНИЙ");
 
-	while(list==4){
+	while(1){
 
 	   key_st(10);
 
@@ -282,8 +333,9 @@ int main(void)
 
 	  	  	  		  if(up){S_dat++;if(S_dat>4)S_dat=0;IWDG_ReloadCounter();}
 	  	  	  		  if(dn){S_dat--;if(S_dat>4)S_dat=0;IWDG_ReloadCounter();}
-	  	  	  		  	  	  	  	  /*********************************************/
-	  	  	  	meny_driv ();//двигаем менюшку или выходим
+
+	  	  	  	if (meny){rt=0;S_dat=0; lcd_clear(); return;}
+	  	  	  	//meny_driv ();//двигаем менюшку или выходим
 	  	  	  		 // if(meny){S_dat=0; save_ok(); }
 
 
@@ -291,11 +343,13 @@ int main(void)
    }
 
 //************************поис датчика 2 **********************************************************//
-   if(list==5)
+ void list_in()
+
       {IWDG_ReloadCounter();
+      lcd_clear();
    	   set_d_ds18b20 ("  DS18  ВНУТРИ");
 
-   	while(list==5){
+   	while(1){
 
    	   key_st(10);
 
@@ -363,19 +417,20 @@ int main(void)
    	  	  	  		  if(dn){S_dat--;if(S_dat>4)S_dat=0;IWDG_ReloadCounter();}
    	  	  	  		  	  	  	  	  /*********************************************/
 
-   	  	  	  		  //if(meny){S_dat=0; save_ok(); }
-   	  	  	  	meny_driv ();
+   	  	  	  	if (meny){rt=0;S_dat=0; lcd_clear(); return;}
+   	  	  	  	//meny_driv ();
 
    		}
       }
 
 
 //*********************поисk датчика 3************************************************************************//
-   if(list==6)
+ void list_eng()
       {IWDG_ReloadCounter();
+      lcd_clear();
    	   set_d_ds18b20 ("  DS18 ВИГАТЕЛЬ");
 
-   	while(list==6){
+   	while(1){
 
    	   key_st(10);
 
@@ -442,28 +497,26 @@ int main(void)
    	  	  	  		  if(up){S_dat++;if(S_dat>4)S_dat=0;IWDG_ReloadCounter();}
    	  	  	  		  if(dn){S_dat--;if(S_dat>4)S_dat=0;IWDG_ReloadCounter();}
    	  	  	  		  	  	  	  	  /*********************************************/
-
-   	  	  	  		  if(meny){S_dat=0; list++;lcd_clear(); }
+   	  	  	  	if (meny){rt=0;S_dat=0; lcd_clear(); return;}
+   	  	  	  	//meny_driv ();
 
 
    		}
       }
 
-   if(list==7){BipStop(); lcd_set_strs(2,24,8,"СОХРАНЯЕМ",0);
-    write_seatings(); delay_ms(200); list=0;lcd_clear();
-    		ILL_OFF;}
-
-//**************while*********************************************************//
 
 
-    }
-}
+
+
+
+
 //*****************************************************************************************************//
 //*******************************************************************************************************//
 void meny_driv() {
-	if (meny){list++; lcd_clear();S_dat=0;lcd_set_strs(2,21,8,"СЛЕДУЮЩИЙ",0);delay_ms(200);lcd_clear();}//следующее меню//   L=(84-9*6)/2;
-   	       	     if(meny_l){IWDG_ReloadCounter();S_dat=0; BipStop(); lcd_clear();lcd_set_strs(2,21,8,"СОХРАНЯЕМ",0);
-   	      	        write_seatings(); delay_ms(200); list=0;lcd_clear();}//сохраняем и выходим
+	if (meny){list=1;rt=0;S_dat=0; lcd_clear(); return;}
+	/*lcd_set_strs(2,21,8,"СЛЕДУЮЩИЙ",0);delay_ms(200);lcd_clear();*///следующее меню//   L=(84-9*6)/2;
+   	       	    // if(meny_l){rt=0;IWDG_ReloadCounter();S_dat=0; BipStop(); lcd_clear();lcd_set_strs(2,21,8,"СОХРАНЯЕМ",0);
+   	      	     //   write_seatings(); delay_ms(200); list=0;lcd_clear();}//сохраняем и выходим
    	       	 }
 
 
@@ -590,11 +643,11 @@ void TIM4_IRQHandler (void)
 
 	  	  	 // lcd_set_strs(3,0,16,"OUT",0);
 	  	  	   T_out(5,0,16,0);
-	  	  	   lcd_set_strs(5,42,16,"IN",0);
-	  	  	   T_in(5,60,16,0);
-	    	   lcd_set_strs(7,0,16,"D",0);
-	    	   T_eng(7,10,16,0);
-	    	   Bat(7,52,16,0);
+	  	  	   lcd_set_strs(5,45,16,"S",0);
+	  	  	   T_in(5,55,16,0);
+	    	   lcd_set_strs(7,45,16,"D",0);
+	    	   T_eng(7,55,16,0);
+	    	   Bat(7,0,16,0);
 
 	    	   //**спаль до прерывания по таймеру сек или  индикации
 	    	  	    	     	 if(S){lcd_set_strs(2,40,24,":", 1);if(!S_dat){__WFI();}}//рисуем точки и спать
@@ -649,8 +702,11 @@ void T_out(u8 y,u8 x, u8 h,u8 c)//D код датчика
     	       	 //  R = (crc_check(data));
     	   temp_out.d = CONV_TEMP_DS18B20 (0.625,TH_,TL_);// пересчитавеем по приращению
     	       	   _sprtffd(1,buf,temp_out.d);
+    	       	   chek_str(buf,4);
     	   lcd_set_strs(y,x,h,buf,c);
     	   lcd_set_sector (y,l,8,8,celsiy_8x8,0);
+    	   lcd_set_rect(y+1,l,8,1);
+
    } else {lcd_set_strs(y,x,h,"----",0);}//датчик не установлен
 }
 //*********************************************************************************************************************//
@@ -667,9 +723,10 @@ void T_in(u8 y,u8 x, u8 h,u8 c)
     	 //  R = (crc_check(data));
     	   temp_in.d = CONV_TEMP_DS18B20 (0.625,TH_,TL_);// пересчитавеем по приращению
     	   _sprtffd(1,buf,temp_in.d);
-
+    	   chek_str(buf,4);
     	   lcd_set_strs(y,x,h,buf,c);
-    	   //lcd_set_sector (y,l,8,8,celsiy_8x8,c);
+    	   lcd_set_sector (y,l,8,8,celsiy_8x8,c);
+    	   lcd_set_rect(y+1,l,8,1);
   } else {lcd_set_strs(y,x,h,"----",c);}//датчик не установлен
   }
 //*********************************************************************************************************************//
@@ -688,9 +745,10 @@ void T_in(u8 y,u8 x, u8 h,u8 c)
 	      	 //  R = (crc_check(data));
 	      	   temp_eng.d = CONV_TEMP_DS18B20 (0.625,TH_,TL_);// пересчитавеем по приращению
 	      	   _sprtffd(1,buf,temp_eng.d);
-
+	      	   chek_str(buf,4);
 	      	   lcd_set_strs(y,x,h,buf,c);
 	      	   lcd_set_sector (y,l,8,8,celsiy_8x8,c);
+	      	   lcd_set_rect(y+1,l,8,1);
 	    } else {lcd_set_strs(y,x,h,"----",c);}//датчик не установлен
 	    }
 

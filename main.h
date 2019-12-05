@@ -2,11 +2,6 @@
 
 
 #include <stm32f10x.h>
-
-#include <stm32f10x_adc.h>
-#include <stm32f10x_flash.h>
-#include <stm32f10x_iwdg.h>
-#include <stm32f10x_rtc.h>
 #include <stm32f10x_gpio.h>
 #include <stm32f10x_rcc.h>
 
@@ -209,6 +204,11 @@ typedef struct
 		void T_out(u8 y,u8 x, u8 h,u8 c);
 		void T_in(u8 y,u8 x, u8 h,u8 c);
 		void T_eng(u8 y,u8 x, u8 h,u8 c);
-
+		void list_contrast();
+		void list_ill();
+		void list_volt();
+		void list_out();
+		void list_in();
+		void list_eng();
 
 //********************************************//
